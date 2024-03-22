@@ -1,0 +1,33 @@
+version: "3.9"
+
+networks:
+  dbf-network:
+    driver: bridge
+    name: dbf-network
+
+volumes:
+  dbf_data:
+    name: dbf_data
+
+services:
+  dbf_db:
+    image: postgres:latest
+    container_name: dbf_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=${PGDATA}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - type: volume
+        source: dbf_data
+        target: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      interval: 5s
+      retries: 5
+    networks:
+      - dbf-network
