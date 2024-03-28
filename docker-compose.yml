@@ -8,6 +8,8 @@ networks:
 volumes:
   dbf_data:
     name: dbf_data
+  redis_data:
+    name: redis_data
 
 services:
   dbf_db:
@@ -29,5 +31,17 @@ services:
       test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
       interval: 5s
       retries: 5
+    networks:
+      - dbf-network
+
+  dbf_redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - type: volume
+        source: redis_data
+        target: /data
     networks:
       - dbf-network
