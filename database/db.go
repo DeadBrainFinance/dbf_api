@@ -12,8 +12,9 @@ type Postgres struct {
 	DB *sql.DB
 }
 
-func NewPostgres(db_name, host, user, password string) (*Postgres, error) {
-    db, err := sql.Open("postgres", "postgresql://" + user + ":" + password + "@" + host + "/" + db_name + "?sslmode=disable")
+func NewPostgres(db_name, host, port, user, password string) (*Postgres, error) {
+    conn := "postgresql://" + user + ":" + password + "@" + host + ":" + port + "/" + db_name + "?sslmode=disable"
+    db, err := sql.Open("postgres", conn)
 	if err != nil {
 		return nil, err
 	}

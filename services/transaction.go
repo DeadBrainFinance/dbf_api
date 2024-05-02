@@ -8,7 +8,10 @@ import (
 
 	// "database/sql"
 	"dbf_api/models"
+	"dbf_api/repositories"
+	"dbf_api/schemas"
 	"dbf_api/utils"
+
 	"encoding/json"
 	"net/http"
 
@@ -16,21 +19,18 @@ import (
 )
 
 type Service struct {
-	queries *models.Queries
+	// queries *models.Queries
+   transactionRepository *repositories.TransactionRepository
 }
 
-func NewService(queries *models.Queries) *Service {
-	return &Service{queries: queries}
-}
-
-type test_struct struct {
-	Test string
+func NewService(transRepo *repositories.TransactionRepository) *Service {
+	return &Service{transactionRepository: transRepo}
 }
 
 func (s *Service) RegisterHandlers() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/", s.ListAll)
+	r.Get("/", s.ListTransactions)
 	r.Post("/", s.CreateRecord)
 	r.Get("/{id}", s.GetById)
 	r.Put("/{id}", s.UpdateRecord)
@@ -39,8 +39,8 @@ func (s *Service) RegisterHandlers() chi.Router {
 	return r
 }
 
-func (s *Service) ListAll(w http.ResponseWriter, r *http.Request) {
-	transactions, err := s.queries.ListTransactions(context.Background())
+func (s *Service) ListTransactions(w http.ResponseWriter, r *http.Request) {
+	transactions, err := s.transactionRepository.ListTransactions(context.Background())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -59,7 +59,7 @@ func (s *Service) GetById(w http.ResponseWriter, r *http.Request) {
 		log.Println("Can't parse id in the URL.")
 		return
 	}
-	transaction, err := s.queries.GetTransaction(context.Background(), parsed_id)
+	transaction, err := s.transactionRepository.GetByID(context.Background(), parsed_id)
 	if err != nil {
 		if transaction.Name == "" {
 			http.Error(w, "Not found", http.StatusNotFound)
@@ -84,13 +84,13 @@ func (s *Service) CreateRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := models.CreateTransactionParams{
+	params := schemas.CreateTransactionParams{
 		Name: transaction.Name,
 		Cost: transaction.Cost,
 		Time: transaction.Time,
 	}
 
-	_, err = s.queries.CreateTransaction(context.Background(), params)
+	err = s.transactionRepository.CreateTransaction(context.Background(), params)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -103,7 +103,7 @@ func (s *Service) CreateRecord(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) UpdateRecord(w http.ResponseWriter, r *http.Request) {
-    var params models.PartialUpdateTransactionParams
+    var params schemas.PartialUpdateTransactionParams
 	id := chi.URLParam(r, "id")
 	parsed_id, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
@@ -133,7 +133,7 @@ func (s *Service) UpdateRecord(w http.ResponseWriter, r *http.Request) {
         params.UpdateTime = true
     }
 
-    _, err = s.queries.PartialUpdateTransaction(context.Background(), params)
+    err = s.transactionRepository.PartialUpdateTransaction(context.Background(), params)
     if err != nil {
         http.Error(w, "Internal error", http.StatusInternalServerError)
         log.Println(err.Error())
@@ -154,7 +154,7 @@ func (s *Service) DeleteRecord(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    err = s.queries.DeleteTransaction(context.Background(), parsed_id)
+    err = s.transactionRepository.DeleteTransaction(context.Background(), parsed_id)
     if err != nil {
         http.Error(w, "Internal error", http.StatusInternalServerError)
         log.Println(err.Error())
