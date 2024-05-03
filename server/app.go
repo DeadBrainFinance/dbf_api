@@ -31,7 +31,7 @@ func InitDB() *database.Postgres {
     var envFile utils.EnvConfigs
     envFile.LoadEnvVariables()
 
-    db, err := database.NewPostgres(envFile.POSTGRES_DB, "localhost", envFile.POSTGRES_PORT, envFile.POSTGRES_USER, envFile.POSTGRES_PASSWORD)
+    db, err := database.NewPostgres(envFile.DB, "localhost", envFile.DB_PORT, envFile.DB_USER, envFile.DB_PASSWORD)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -82,6 +82,8 @@ func (a *App) Run(port string) error {
             log.Fatalf("Failed to listen and server: %+v", err)
         }
     }()
+
+    log.Println("API up and running")
 
     quit := make(chan os.Signal, 1)
     signal.Notify(quit, os.Interrupt, os.Interrupt)

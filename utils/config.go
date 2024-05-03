@@ -7,11 +7,10 @@ import (
 )
 
 type EnvConfigs struct {
-    POSTGRES_DB string
-    POSTGRES_USER string
-    POSTGRES_PASSWORD string
-    PGDATA string
-    POSTGRES_PORT string
+    DB string
+    DB_USER string
+    DB_PASSWORD string
+    DB_PORT string
 }
 
 func(config *EnvConfigs) LoadEnvVariables() {
