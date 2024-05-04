@@ -7,14 +7,6 @@ import (
 	"dbf_api/schemas"
 )
 
-type Repository interface {
-    CreateTransaction(ctx context.Context, arg schemas.CreateTransactionParams) error
-    UpdateTransaction(ctx context.Context, arg schemas.PartialUpdateTransactionParams) error
-    DeleteTransaction(ctx context.Context, id int64) error
-    GetByID(ctx context.Context, id int64) (*models.Transaction, error)
-    ListTransactions(ctx context.Context) ([]models.Transaction, error)
-}
-
 type TransactionRepository struct {
     db *sql.DB
 }
@@ -39,24 +31,25 @@ func (repo *TransactionRepository) GetByID(ctx context.Context, id int64) (*mode
 		&i.Name,
 		&i.Cost,
 		&i.Time,
+        &i.CategoryID,
 	)
 	return i, err
 }
 
-
 const createTransaction = `-- name: CreateTransaction :one
-insert into transaction (name, cost, time)
-values($1, $2, $3)
-returning id, name, cost, time
+insert into transaction (name, cost, time, category_id)
+values($1, $2, $3, $4)
+returning id, name, cost, time, category_id
 `
 func (repo *TransactionRepository) CreateTransaction(ctx context.Context, arg schemas.CreateTransactionParams) error {
-	row := repo.db.QueryRowContext(ctx, createTransaction, arg.Name, arg.Cost, arg.Time)
+	row := repo.db.QueryRowContext(ctx, createTransaction, arg.Name, arg.Cost, arg.Time, arg.CategoryID)
 	var i models.Transaction
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Cost,
 		&i.Time,
+        &i.CategoryID,
 	)
     return err
 }
@@ -73,11 +66,12 @@ func (repo *TransactionRepository) DeleteTransaction(ctx context.Context, id int
 
 const partialUpdateTransaction = `-- name: PartialUpdateTransaction :one
 update transaction
-set name = case when $1::boolean then $2::VARCHAR(255) else name end,
+set name = case when $1::boolean then $2::varchar(255) else name end,
     cost = case when $3::boolean then $4::real else cost end,
-    time = case when $5::boolean then $6::timestamp else time end
-where id = $7
-returning id, name, cost, time
+    time = case when $5::boolean then $6::timestamp else time end,
+    category_id = case when $7::boolean then $8::int else category_id end
+where id = $9
+returning id, name, cost, time, category_id
 `
 func (repo *TransactionRepository) PartialUpdateTransaction(ctx context.Context, arg schemas.PartialUpdateTransactionParams) error {
 	row := repo.db.QueryRowContext(ctx, partialUpdateTransaction,
@@ -87,6 +81,8 @@ func (repo *TransactionRepository) PartialUpdateTransaction(ctx context.Context,
 		arg.Cost,
 		arg.UpdateTime,
 		arg.Time,
+        arg.UpdateCategoryID,
+        arg.CategoryID,
 		arg.ID,
 	)
 	var i models.Transaction
@@ -95,12 +91,13 @@ func (repo *TransactionRepository) PartialUpdateTransaction(ctx context.Context,
 		&i.Name,
 		&i.Cost,
 		&i.Time,
+        &i.CategoryID,
 	)
 	return err
 }
 
 const listTransactions = `-- name: ListTransactions :many
-select id, name, cost, time
+select id, name, cost, time, category_id
 from transaction
 order by name
 `
@@ -119,6 +116,7 @@ func (repo *TransactionRepository) ListTransactions(ctx context.Context) ([]mode
 			&i.Name,
 			&i.Cost,
 			&i.Time,
+            &i.CategoryID,
 		); err != nil {
 			return nil, err
 		}

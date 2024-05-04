@@ -2,8 +2,8 @@ version: "3.9"
 
 networks:
   dbf-network:
-    driver: bridge
     name: dbf-network
+    driver: bridge
 
 volumes:
   dbf_data:
@@ -31,8 +31,10 @@ services:
       retries: 5
     networks:
       - dbf-network
+
   dbf_backend:
     container_name: dbf_api
+    restart: unless-stopped
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -45,4 +47,6 @@ services:
     command: bash -c "goose -dir database/migrations ${DB_DRIVER} ${CONNECTION_STRING} up && air -c .air.toml"
     networks:
       - dbf-network
+    depends_on:
+      - dbf_db
 

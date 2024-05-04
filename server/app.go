@@ -11,7 +11,6 @@ import (
 
 	"dbf_api/database"
 	"dbf_api/repositories"
-	"dbf_api/routes"
 	"dbf_api/services"
 	"dbf_api/utils"
 
@@ -31,7 +30,7 @@ func InitDB() *database.Postgres {
     var envFile utils.EnvConfigs
     envFile.LoadEnvVariables()
 
-    db, err := database.NewPostgres(envFile.DB, "localhost", envFile.DB_PORT, envFile.DB_USER, envFile.DB_PASSWORD)
+    db, err := database.NewPostgres(envFile.DB, "host.docker.internal", envFile.DB_PORT, envFile.DB_USER, envFile.DB_PASSWORD)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -52,10 +51,13 @@ func APIV1(db *sql.DB) chi.Router {
     r := chi.NewRouter()
 
     transactionRepository := repositories.NewTransactionRepository(db)
-    transactionService := services.NewService(transactionRepository)
-    transactionRoute := routes.RegisterHTTPEndpoints(r, transactionService)
+    transactionService := services.NewTransactionService(transactionRepository)
 
-    r.Mount("/transactions", transactionRoute)
+    categoryRepository := repositories.NewCategoryRepository(db)
+    categoryService := services.NewCategoryService(categoryRepository)
+
+    transactionService.RegisterHTTPEndpoints(r)
+    categoryService.RegisterHTTPEndpoints(r)
 
     return r
 }
@@ -71,6 +73,11 @@ func (a *App) Run(port string) error {
 
 
     router.Mount("/api", Version(db.DB))
+
+    chi.Walk(router, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		log.Printf("[%s]: '%s' has %d middlewares\n", method, route, len(middlewares))
+		return nil
+	})
 
     a.httpServer = &http.Server{
         Addr: ":" + port,

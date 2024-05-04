@@ -10,28 +10,107 @@ import (
 	"time"
 )
 
+const createBalanceSheet = `-- name: CreateBalanceSheet :one
+insert into balancesheet (month, year, allocation, paid, remaining, category_id)
+values($1, $2, $3, $4, $5, $6)
+returning id, month, year, allocation, paid, remaining, category_id
+`
+
+type CreateBalanceSheetParams struct {
+	Month      int32
+	Year       int32
+	Allocation float64
+	Paid       float64
+	Remaining  float64
+	CategoryID int32
+}
+
+func (q *Queries) CreateBalanceSheet(ctx context.Context, arg CreateBalanceSheetParams) (Balancesheet, error) {
+	row := q.db.QueryRowContext(ctx, createBalanceSheet,
+		arg.Month,
+		arg.Year,
+		arg.Allocation,
+		arg.Paid,
+		arg.Remaining,
+		arg.CategoryID,
+	)
+	var i Balancesheet
+	err := row.Scan(
+		&i.ID,
+		&i.Month,
+		&i.Year,
+		&i.Allocation,
+		&i.Paid,
+		&i.Remaining,
+		&i.CategoryID,
+	)
+	return i, err
+}
+
+const createCategory = `-- name: CreateCategory :one
+insert into category (name)
+values($1)
+returning id, name
+`
+
+func (q *Queries) CreateCategory(ctx context.Context, name string) (Category, error) {
+	row := q.db.QueryRowContext(ctx, createCategory, name)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const createTransaction = `-- name: CreateTransaction :one
-insert into transaction (name, cost, time)
-values($1, $2, $3)
-returning id, name, cost, time
+insert into transaction (name, cost, time, category_id)
+values($1, $2, $3, $4)
+returning id, name, cost, time, category_id
 `
 
 type CreateTransactionParams struct {
-	Name string
-	Cost float64
-	Time time.Time
+	Name       string
+	Cost       float64
+	Time       time.Time
+	CategoryID int32
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
-	row := q.db.QueryRowContext(ctx, createTransaction, arg.Name, arg.Cost, arg.Time)
+	row := q.db.QueryRowContext(ctx, createTransaction,
+		arg.Name,
+		arg.Cost,
+		arg.Time,
+		arg.CategoryID,
+	)
 	var i Transaction
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Cost,
 		&i.Time,
+		&i.CategoryID,
 	)
 	return i, err
+}
+
+const deleteBalanceSheet = `-- name: DeleteBalanceSheet :exec
+delete
+from balancesheet
+where id = $1
+`
+
+func (q *Queries) DeleteBalanceSheet(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteBalanceSheet, id)
+	return err
+}
+
+const deleteCategory = `-- name: DeleteCategory :exec
+delete
+from category
+where id = $1
+`
+
+func (q *Queries) DeleteCategory(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteCategory, id)
+	return err
 }
 
 const deleteTransaction = `-- name: DeleteTransaction :exec
@@ -45,8 +124,44 @@ func (q *Queries) DeleteTransaction(ctx context.Context, id int64) error {
 	return err
 }
 
+const getBalanceSheet = `-- name: GetBalanceSheet :one
+select id, month, year, allocation, paid, remaining, category_id
+from balancesheet
+where id = $1
+limit 1
+`
+
+func (q *Queries) GetBalanceSheet(ctx context.Context, id int64) (Balancesheet, error) {
+	row := q.db.QueryRowContext(ctx, getBalanceSheet, id)
+	var i Balancesheet
+	err := row.Scan(
+		&i.ID,
+		&i.Month,
+		&i.Year,
+		&i.Allocation,
+		&i.Paid,
+		&i.Remaining,
+		&i.CategoryID,
+	)
+	return i, err
+}
+
+const getCategory = `-- name: GetCategory :one
+select id, name
+from category
+where id = $1
+limit 1
+`
+
+func (q *Queries) GetCategory(ctx context.Context, id int64) (Category, error) {
+	row := q.db.QueryRowContext(ctx, getCategory, id)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getTransaction = `-- name: GetTransaction :one
-select id, name, cost, time
+select id, name, cost, time, category_id
 from transaction
 where id = $1
 limit 1
@@ -60,12 +175,79 @@ func (q *Queries) GetTransaction(ctx context.Context, id int64) (Transaction, er
 		&i.Name,
 		&i.Cost,
 		&i.Time,
+		&i.CategoryID,
 	)
 	return i, err
 }
 
+const listBalanceSheets = `-- name: ListBalanceSheets :many
+select id, month, year, allocation, paid, remaining, category_id
+from balancesheet
+order by year desc, month desc
+`
+
+func (q *Queries) ListBalanceSheets(ctx context.Context) ([]Balancesheet, error) {
+	rows, err := q.db.QueryContext(ctx, listBalanceSheets)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Balancesheet
+	for rows.Next() {
+		var i Balancesheet
+		if err := rows.Scan(
+			&i.ID,
+			&i.Month,
+			&i.Year,
+			&i.Allocation,
+			&i.Paid,
+			&i.Remaining,
+			&i.CategoryID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCategories = `-- name: ListCategories :many
+select id, name
+from category
+order by name
+`
+
+func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.QueryContext(ctx, listCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransactions = `-- name: ListTransactions :many
-select id, name, cost, time
+select id, name, cost, time, category_id
 from transaction
 order by name
 `
@@ -84,6 +266,7 @@ func (q *Queries) ListTransactions(ctx context.Context) ([]Transaction, error) {
 			&i.Name,
 			&i.Cost,
 			&i.Time,
+			&i.CategoryID,
 		); err != nil {
 			return nil, err
 		}
@@ -98,23 +281,102 @@ func (q *Queries) ListTransactions(ctx context.Context) ([]Transaction, error) {
 	return items, nil
 }
 
+const partialUpdateBalanceSheet = `-- name: PartialUpdateBalanceSheet :one
+update balancesheet
+set month = case when $1::boolean then $2::int else month end,
+    year = case when $3::boolean then $4::int else year end,
+    allocation = case when $5::boolean then $6::float else allocation end,
+    paid = case when $7::boolean then $8::float else paid end,
+    remaining = case when $9::boolean then $10::float else remaining end,
+    category_id = case when $11::boolean then $12::bigserial else category_id end
+where id = $13
+returning id, month, year, allocation, paid, remaining, category_id
+`
+
+type PartialUpdateBalanceSheetParams struct {
+	UpdateMonth      bool
+	Month            int32
+	UpdateYear       bool
+	Year             int32
+	UpdateAllocation bool
+	Allocation       float64
+	UpdatePaid       bool
+	Paid             float64
+	UpdateRemaining  bool
+	Remaining        float64
+	UpdateCategories bool
+	CategoryID       int64
+	ID               int64
+}
+
+func (q *Queries) PartialUpdateBalanceSheet(ctx context.Context, arg PartialUpdateBalanceSheetParams) (Balancesheet, error) {
+	row := q.db.QueryRowContext(ctx, partialUpdateBalanceSheet,
+		arg.UpdateMonth,
+		arg.Month,
+		arg.UpdateYear,
+		arg.Year,
+		arg.UpdateAllocation,
+		arg.Allocation,
+		arg.UpdatePaid,
+		arg.Paid,
+		arg.UpdateRemaining,
+		arg.Remaining,
+		arg.UpdateCategories,
+		arg.CategoryID,
+		arg.ID,
+	)
+	var i Balancesheet
+	err := row.Scan(
+		&i.ID,
+		&i.Month,
+		&i.Year,
+		&i.Allocation,
+		&i.Paid,
+		&i.Remaining,
+		&i.CategoryID,
+	)
+	return i, err
+}
+
+const partialUpdateCategory = `-- name: PartialUpdateCategory :one
+update category
+set name = $2
+where id = $1
+returning id, name
+`
+
+type PartialUpdateCategoryParams struct {
+	ID   int64
+	Name string
+}
+
+func (q *Queries) PartialUpdateCategory(ctx context.Context, arg PartialUpdateCategoryParams) (Category, error) {
+	row := q.db.QueryRowContext(ctx, partialUpdateCategory, arg.ID, arg.Name)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const partialUpdateTransaction = `-- name: PartialUpdateTransaction :one
 update transaction
 set name = case when $1::boolean then $2::VARCHAR(255) else name end,
     cost = case when $3::boolean then $4::real else cost end,
-    time = case when $5::boolean then $6::timestamp else time end
-where id = $7
-returning id, name, cost, time
+    time = case when $5::boolean then $6::timestamp else time end,
+    category_id = case when $7::boolean then $8::int else category_id end
+where id = $9
+returning id, name, cost, time, category_id
 `
 
 type PartialUpdateTransactionParams struct {
-	UpdateName bool
-	Name       string
-	UpdateCost bool
-	Cost       float32
-	UpdateTime bool
-	Time       time.Time
-	ID         int64
+	UpdateName       bool
+	Name             string
+	UpdateCost       bool
+	Cost             float32
+	UpdateTime       bool
+	Time             time.Time
+	UpdateCategoryID bool
+	CategoryID       int32
+	ID               int64
 }
 
 func (q *Queries) PartialUpdateTransaction(ctx context.Context, arg PartialUpdateTransactionParams) (Transaction, error) {
@@ -125,6 +387,8 @@ func (q *Queries) PartialUpdateTransaction(ctx context.Context, arg PartialUpdat
 		arg.Cost,
 		arg.UpdateTime,
 		arg.Time,
+		arg.UpdateCategoryID,
+		arg.CategoryID,
 		arg.ID,
 	)
 	var i Transaction
@@ -133,6 +397,7 @@ func (q *Queries) PartialUpdateTransaction(ctx context.Context, arg PartialUpdat
 		&i.Name,
 		&i.Cost,
 		&i.Time,
+		&i.CategoryID,
 	)
 	return i, err
 }
@@ -143,7 +408,7 @@ set name = $2,
     cost = $3,
     time = $4
 where id = $1
-returning id, name, cost, time
+returning id, name, cost, time, category_id
 `
 
 type UpdateTransactionParams struct {
@@ -166,6 +431,7 @@ func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionPa
 		&i.Name,
 		&i.Cost,
 		&i.Time,
+		&i.CategoryID,
 	)
 	return i, err
 }
