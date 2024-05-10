@@ -1,6 +1,6 @@
 package models
 
-type Balancesheet struct {
+type BalanceSheet struct {
 	ID         int64
 	Month      int32
 	Year       int32

@@ -25,7 +25,7 @@ type CreateBalanceSheetParams struct {
 	CategoryID int32
 }
 
-func (q *Queries) CreateBalanceSheet(ctx context.Context, arg CreateBalanceSheetParams) (Balancesheet, error) {
+func (q *Queries) CreateBalanceSheet(ctx context.Context, arg CreateBalanceSheetParams) (BalanceSheet, error) {
 	row := q.db.QueryRowContext(ctx, createBalanceSheet,
 		arg.Month,
 		arg.Year,
@@ -34,7 +34,7 @@ func (q *Queries) CreateBalanceSheet(ctx context.Context, arg CreateBalanceSheet
 		arg.Remaining,
 		arg.CategoryID,
 	)
-	var i Balancesheet
+	var i BalanceSheet
 	err := row.Scan(
 		&i.ID,
 		&i.Month,
@@ -131,9 +131,9 @@ where id = $1
 limit 1
 `
 
-func (q *Queries) GetBalanceSheet(ctx context.Context, id int64) (Balancesheet, error) {
+func (q *Queries) GetBalanceSheet(ctx context.Context, id int64) (BalanceSheet, error) {
 	row := q.db.QueryRowContext(ctx, getBalanceSheet, id)
-	var i Balancesheet
+	var i BalanceSheet
 	err := row.Scan(
 		&i.ID,
 		&i.Month,
@@ -186,15 +186,15 @@ from balancesheet
 order by year desc, month desc
 `
 
-func (q *Queries) ListBalanceSheets(ctx context.Context) ([]Balancesheet, error) {
+func (q *Queries) ListBalanceSheets(ctx context.Context) ([]BalanceSheet, error) {
 	rows, err := q.db.QueryContext(ctx, listBalanceSheets)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Balancesheet
+	var items []BalanceSheet
 	for rows.Next() {
-		var i Balancesheet
+		var i BalanceSheet
 		if err := rows.Scan(
 			&i.ID,
 			&i.Month,
@@ -309,7 +309,7 @@ type PartialUpdateBalanceSheetParams struct {
 	ID               int64
 }
 
-func (q *Queries) PartialUpdateBalanceSheet(ctx context.Context, arg PartialUpdateBalanceSheetParams) (Balancesheet, error) {
+func (q *Queries) PartialUpdateBalanceSheet(ctx context.Context, arg PartialUpdateBalanceSheetParams) (BalanceSheet, error) {
 	row := q.db.QueryRowContext(ctx, partialUpdateBalanceSheet,
 		arg.UpdateMonth,
 		arg.Month,
@@ -325,7 +325,7 @@ func (q *Queries) PartialUpdateBalanceSheet(ctx context.Context, arg PartialUpda
 		arg.CategoryID,
 		arg.ID,
 	)
-	var i Balancesheet
+	var i BalanceSheet
 	err := row.Scan(
 		&i.ID,
 		&i.Month,

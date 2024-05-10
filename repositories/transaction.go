@@ -18,14 +18,14 @@ func NewTransactionRepository(db *sql.DB) *TransactionRepository {
 }
 
 const getTransaction = `-- name: GetTransaction :one
-select id, name, cost, time
+select id, name, cost, time, category_id
 from transaction
 where id = $1
 limit 1
 `
-func (repo *TransactionRepository) GetByID(ctx context.Context, id int64) (*models.Transaction, error) {
+func (repo *TransactionRepository) GetByID(ctx context.Context, id int64) (models.Transaction, error) {
     row := repo.db.QueryRowContext(ctx, getTransaction, id)
-	var i *models.Transaction
+	var i models.Transaction
 	err := row.Scan(
 		&i.ID,
 		&i.Name,

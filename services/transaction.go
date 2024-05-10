@@ -35,7 +35,6 @@ func (s *TransactionService) RegisterHTTPEndpoints(r chi.Router) {
 
 func (s *TransactionService) ListTransactions(w http.ResponseWriter, r *http.Request) {
 	transactions, err := s.transactionRepository.ListTransactions(context.Background())
-    log.Println(transactions)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -79,8 +78,6 @@ func (s *TransactionService) CreateTransaction(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-    log.Println(transaction)
-
 	params := schemas.CreateTransactionParams{
 		Name: transaction.Name,
 		Cost: transaction.Cost,
@@ -120,7 +117,6 @@ func (s *TransactionService) UpdateRecord(w http.ResponseWriter, r *http.Request
     }
 
     params.ID = parsed_id
-    log.Println(params.CategoryID)
 
     if params.Cost != 0 {
         params.UpdateCost = true
@@ -134,7 +130,6 @@ func (s *TransactionService) UpdateRecord(w http.ResponseWriter, r *http.Request
     if params.CategoryID != 0 {
         params.UpdateCategoryID = true
     }
-    log.Println(params)
 
     err = s.transactionRepository.PartialUpdateTransaction(context.Background(), params)
     if err != nil {
