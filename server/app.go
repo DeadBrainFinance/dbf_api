@@ -59,9 +59,21 @@ func APIV1(db *sql.DB) chi.Router {
     balancesheetRepository := repositories.NewBalanceSheetRepository(db)
     balancesheetService := services.NewBalanceSheetService(balancesheetRepository)
 
+    methodRepository := repositories.NewMethodRepository(db)
+    methodService := services.NewMethodService(methodRepository)
+
+    accountRepository := repositories.NewAccountRepository(db)
+    accountService := services.NewAccountService(accountRepository)
+
+    installmentRepository := repositories.NewInstallmentRepository(db)
+    installmentService := services.NewInstallmentService(installmentRepository)
+
     transactionService.RegisterHTTPEndpoints(r)
     categoryService.RegisterHTTPEndpoints(r)
     balancesheetService.RegisterHTTPEndpoints(r)
+    methodService.RegisterHTTPEndpoints(r)
+    accountService.RegisterHTTPEndpoints(r)
+    installmentService.RegisterHTTPEndpoints(r)
 
     return r
 }

@@ -6,6 +6,7 @@ import (
 
 	"dbf_api/models"
 	"dbf_api/schemas"
+	"dbf_api/utils"
 )
 
 type BalanceSheetRepository struct {
@@ -18,14 +19,8 @@ func NewBalanceSheetRepository(db *sql.DB) *BalanceSheetRepository {
 	}
 }
 
-const getBalanceSheet = `-- name: GetBalanceSheet :one
-select id, month, year, allocation, paid, remaining, category_id
-from balancesheet
-where id = $1
-limit 1
-`
 func (repo *BalanceSheetRepository) GetByID(ctx context.Context, id int64) (models.BalanceSheet, error) {
-	row := repo.db.QueryRowContext(ctx, getBalanceSheet, id)
+	row := repo.db.QueryRowContext(ctx, utils.GetBalanceSheet, id)
 	var i models.BalanceSheet
 	err := row.Scan(
 		&i.ID,
@@ -39,14 +34,9 @@ func (repo *BalanceSheetRepository) GetByID(ctx context.Context, id int64) (mode
 	return i, err
 }
 
-const createBalanceSheet = `-- name: CreateBalanceSheet :one
-insert into balancesheet (month, year, allocation, paid, remaining, category_id)
-values($1, $2, $3, $4, $5, $6)
-returning id, month, year, allocation, paid, remaining, category_id
-`
 
 func (repo *BalanceSheetRepository) CreateBalanceSheet(ctx context.Context, arg schemas.CreateBalanceSheetParams) error {
-	row := repo.db.QueryRowContext(ctx, createBalanceSheet, arg.Month, arg.Year, arg.Allocation, arg.Paid, arg.Remaining, arg.CategoryID)
+	row := repo.db.QueryRowContext(ctx, utils.CreateBalanceSheet, arg.Month, arg.Year, arg.Allocation, arg.Paid, arg.Remaining, arg.CategoryID)
 	var i models.BalanceSheet
 	err := row.Scan(
         &i.ID,
@@ -60,31 +50,13 @@ func (repo *BalanceSheetRepository) CreateBalanceSheet(ctx context.Context, arg 
 	return err
 }
 
-const deleteBalanceSheet = `-- name: DeleteBalanceSheet :exec
-delete
-from balancesheet
-where id = $1
-`
-
 func (repo *BalanceSheetRepository) DeleteBalanceSheet(ctx context.Context, id int64) error {
-	_, err := repo.db.ExecContext(ctx, deleteBalanceSheet, id)
+	_, err := repo.db.ExecContext(ctx, utils.CreateBalanceSheet, id)
 	return err
 }
 
-const partialUpdateBalanceSheet = `-- name: PartialUpdateBalanceSheet :one
-update balancesheet
-set month = case when $1::boolean then $2::int else month end,
-    year = case when $3::boolean then $4::int else year end,
-    allocation = case when $5::boolean then $6::real else allocation end,
-    paid = case when $7::boolean then $8::real else paid end,
-    remaining = case when $9::boolean then $10::real else remaining end,
-    category_id = case when $11::boolean then $12::int else category_id end
-where id = $13
-returning id, month, year, allocation, paid, remaining, category_id
-`
-
 func (repo *BalanceSheetRepository) PartialUpdateBalanceSheet(ctx context.Context, arg schemas.PartialUpdateBalanceSheetParams) error {
-	row := repo.db.QueryRowContext(ctx, partialUpdateBalanceSheet,
+	row := repo.db.QueryRowContext(ctx, utils.PartialUpdateBalanceSheet,
 		arg.UpdateMonth,
 		arg.Month,
 		arg.UpdateYear,
@@ -112,14 +84,9 @@ func (repo *BalanceSheetRepository) PartialUpdateBalanceSheet(ctx context.Contex
 	return err
 }
 
-const listBalanceSheets = `-- name: ListBalanceSheets :many
-select id, month, year, allocation, paid, remaining, category_id
-from balancesheet
-order by year desc, month desc
-`
 
 func (repo *BalanceSheetRepository) ListBalanceSheets(ctx context.Context) ([]models.BalanceSheet, error) {
-	rows, err := repo.db.QueryContext(ctx, listBalanceSheets)
+	rows, err := repo.db.QueryContext(ctx, utils.ListBalanceSheets)
 	if err != nil {
 		return nil, err
 	}

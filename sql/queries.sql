@@ -94,3 +94,71 @@ order by name;
 delete
 from category
 where id = $1;
+
+-- name: CreateAccount :one
+insert into account (name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id)
+values($1, $2, $3, $4, $5, $6, $7, $8)
+returning *;
+
+-- name: GetAccount :one
+select *
+from account
+where id = $1
+limit 1;
+
+-- name: PartialUpdateAccount :one
+update account
+set name = case when @update_name::boolean then @name::varchar(100) else name end,
+    acc_balance = case when @update_acc_balance::boolean then @acc_balance::int else acc_balance end,
+    acc_num = case when @update_acc_num::boolean then @acc_num::varchar(100) else acc_num end,
+    card_num = case when @update_card_num::boolean then @card_num::varchar(100) else card_num end,
+    pin = case when @update_pin::boolean then @pin::varchar(50) else pin end,
+    security_code = case when @update_security_code::boolean then @security_code::varchar(50) else security_code end,
+    credit_limit = case when @update_credit_limit::boolean then @credit_limit::float else credit_limit end,
+    method_id = case when @update_method::boolean then @method_id::bigserial else method_id end
+where id = @id
+returning *;
+
+-- name: ListAccounts :many
+select *
+from account
+order by name;
+
+-- name: DeleteAccount :exec
+delete
+from account
+where id = $1;
+
+-- name: CreateInstallment :one
+insert into installment (name, total_cost, interest_rate, period_num, paid_cost, current_period, period_cost, account_id)
+values($1, $2, $3, $4, $5, $6, $7, $8)
+returning *;
+
+-- name: GetInstallment :one
+select *
+from installment
+where id = $1
+limit 1;
+
+-- name: PartialUpdateInstallment :one
+update installment
+set installment_name = case when @update_name::boolean then @name::varchar(100) else name end,
+    total_cost = case when @update_total_cost::boolean then @total_cost::float else total_cost end,
+    interest_rate = case when @update_interest_rate::boolean then @interest_rate::float else interest_rate end,
+    period_num = case when @update_period_num::boolean then @period_num::int else period_num end,
+    paid_cost = case when @update_paid_cost::boolean then @paid_cost::float else paid_cost end,
+    current_period = case when @update_current_period::boolean then @current_period::int else current_period end,
+    period_cost = case when @update_period_cost::boolean then @period_cost::float else period_cost end,
+    account_id = case when @update_account::boolean then @account_id::bigserial else account_id end
+where id = @id
+returning *;
+
+-- name: ListInstallments :many
+select *
+from installment
+order by name;
+
+-- name: DeleteInstallment :exec
+delete
+from installment
+where id = $1;

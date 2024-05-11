@@ -7,8 +7,52 @@ package models
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
+
+const createAccount = `-- name: CreateAccount :one
+insert into account (name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id)
+values($1, $2, $3, $4, $5, $6, $7, $8)
+returning id, name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id
+`
+
+type CreateAccountParams struct {
+	Name         string
+	AccBalance   sql.NullFloat64
+	AccNum       string
+	CardNum      string
+	Pin          string
+	SecurityCode string
+	CreditLimit  sql.NullFloat64
+	MethodID     int32
+}
+
+func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, createAccount,
+		arg.Name,
+		arg.AccBalance,
+		arg.AccNum,
+		arg.CardNum,
+		arg.Pin,
+		arg.SecurityCode,
+		arg.CreditLimit,
+		arg.MethodID,
+	)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.AccBalance,
+		&i.AccNum,
+		&i.CardNum,
+		&i.Pin,
+		&i.SecurityCode,
+		&i.CreditLimit,
+		&i.MethodID,
+	)
+	return i, err
+}
 
 const createBalanceSheet = `-- name: CreateBalanceSheet :one
 insert into balancesheet (month, year, allocation, paid, remaining, category_id)
@@ -60,6 +104,49 @@ func (q *Queries) CreateCategory(ctx context.Context, name string) (Category, er
 	return i, err
 }
 
+const createInstallment = `-- name: CreateInstallment :one
+insert into installment (name, total_cost, interest_rate, period_num, paid_cost, current_period, period_cost, account_id)
+values($1, $2, $3, $4, $5, $6, $7, $8)
+returning id, name, total_cost, interest_rate, period_num, paid_cost, current_period, period_cost, account_id
+`
+
+type CreateInstallmentParams struct {
+	Name          string
+	TotalCost     float64
+	InterestRate  float64
+	PeriodNum     int32
+	PaidCost      float64
+	CurrentPeriod int32
+	PeriodCost    float64
+	AccountID     int32
+}
+
+func (q *Queries) CreateInstallment(ctx context.Context, arg CreateInstallmentParams) (Installment, error) {
+	row := q.db.QueryRowContext(ctx, createInstallment,
+		arg.Name,
+		arg.TotalCost,
+		arg.InterestRate,
+		arg.PeriodNum,
+		arg.PaidCost,
+		arg.CurrentPeriod,
+		arg.PeriodCost,
+		arg.AccountID,
+	)
+	var i Installment
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.TotalCost,
+		&i.InterestRate,
+		&i.PeriodNum,
+		&i.PaidCost,
+		&i.CurrentPeriod,
+		&i.PeriodCost,
+		&i.AccountID,
+	)
+	return i, err
+}
+
 const createTransaction = `-- name: CreateTransaction :one
 insert into transaction (name, cost, time, category_id)
 values($1, $2, $3, $4)
@@ -91,6 +178,17 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 	return i, err
 }
 
+const deleteAccount = `-- name: DeleteAccount :exec
+delete
+from account
+where id = $1
+`
+
+func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteAccount, id)
+	return err
+}
+
 const deleteBalanceSheet = `-- name: DeleteBalanceSheet :exec
 delete
 from balancesheet
@@ -113,6 +211,17 @@ func (q *Queries) DeleteCategory(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteInstallment = `-- name: DeleteInstallment :exec
+delete
+from installment
+where id = $1
+`
+
+func (q *Queries) DeleteInstallment(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteInstallment, id)
+	return err
+}
+
 const deleteTransaction = `-- name: DeleteTransaction :exec
 delete
 from transaction
@@ -122,6 +231,30 @@ where id = $1
 func (q *Queries) DeleteTransaction(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteTransaction, id)
 	return err
+}
+
+const getAccount = `-- name: GetAccount :one
+select id, name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id
+from account
+where id = $1
+limit 1
+`
+
+func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
+	row := q.db.QueryRowContext(ctx, getAccount, id)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.AccBalance,
+		&i.AccNum,
+		&i.CardNum,
+		&i.Pin,
+		&i.SecurityCode,
+		&i.CreditLimit,
+		&i.MethodID,
+	)
+	return i, err
 }
 
 const getBalanceSheet = `-- name: GetBalanceSheet :one
@@ -160,6 +293,30 @@ func (q *Queries) GetCategory(ctx context.Context, id int64) (Category, error) {
 	return i, err
 }
 
+const getInstallment = `-- name: GetInstallment :one
+select id, name, total_cost, interest_rate, period_num, paid_cost, current_period, period_cost, account_id
+from installment
+where id = $1
+limit 1
+`
+
+func (q *Queries) GetInstallment(ctx context.Context, id int64) (Installment, error) {
+	row := q.db.QueryRowContext(ctx, getInstallment, id)
+	var i Installment
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.TotalCost,
+		&i.InterestRate,
+		&i.PeriodNum,
+		&i.PaidCost,
+		&i.CurrentPeriod,
+		&i.PeriodCost,
+		&i.AccountID,
+	)
+	return i, err
+}
+
 const getTransaction = `-- name: GetTransaction :one
 select id, name, cost, time, category_id
 from transaction
@@ -178,6 +335,45 @@ func (q *Queries) GetTransaction(ctx context.Context, id int64) (Transaction, er
 		&i.CategoryID,
 	)
 	return i, err
+}
+
+const listAccounts = `-- name: ListAccounts :many
+select id, name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id
+from account
+order by name
+`
+
+func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAccounts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Account
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.AccBalance,
+			&i.AccNum,
+			&i.CardNum,
+			&i.Pin,
+			&i.SecurityCode,
+			&i.CreditLimit,
+			&i.MethodID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listBalanceSheets = `-- name: ListBalanceSheets :many
@@ -246,6 +442,45 @@ func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
 	return items, nil
 }
 
+const listInstallments = `-- name: ListInstallments :many
+select id, name, total_cost, interest_rate, period_num, paid_cost, current_period, period_cost, account_id
+from installment
+order by name
+`
+
+func (q *Queries) ListInstallments(ctx context.Context) ([]Installment, error) {
+	rows, err := q.db.QueryContext(ctx, listInstallments)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Installment
+	for rows.Next() {
+		var i Installment
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.TotalCost,
+			&i.InterestRate,
+			&i.PeriodNum,
+			&i.PaidCost,
+			&i.CurrentPeriod,
+			&i.PeriodCost,
+			&i.AccountID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransactions = `-- name: ListTransactions :many
 select id, name, cost, time, category_id
 from transaction
@@ -279,6 +514,75 @@ func (q *Queries) ListTransactions(ctx context.Context) ([]Transaction, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const partialUpdateAccount = `-- name: PartialUpdateAccount :one
+update account
+set name = case when $1::boolean then $2::varchar(100) else name end,
+    acc_balance = case when $3::boolean then $4::int else acc_balance end,
+    acc_num = case when $5::boolean then $6::varchar(100) else acc_num end,
+    card_num = case when $7::boolean then $8::varchar(100) else card_num end,
+    pin = case when $9::boolean then $10::varchar(50) else pin end,
+    security_code = case when $11::boolean then $12::varchar(50) else security_code end,
+    credit_limit = case when $13::boolean then $14::float else credit_limit end,
+    method_id = case when $15::boolean then $16::bigserial else method_id end
+where id = $17
+returning id, name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id
+`
+
+type PartialUpdateAccountParams struct {
+	UpdateName         bool
+	Name               string
+	UpdateAccBalance   bool
+	AccBalance         int32
+	UpdateAccNum       bool
+	AccNum             string
+	UpdateCardNum      bool
+	CardNum            string
+	UpdatePin          bool
+	Pin                string
+	UpdateSecurityCode bool
+	SecurityCode       string
+	UpdateCreditLimit  bool
+	CreditLimit        float64
+	UpdateMethod       bool
+	MethodID           int64
+	ID                 int64
+}
+
+func (q *Queries) PartialUpdateAccount(ctx context.Context, arg PartialUpdateAccountParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, partialUpdateAccount,
+		arg.UpdateName,
+		arg.Name,
+		arg.UpdateAccBalance,
+		arg.AccBalance,
+		arg.UpdateAccNum,
+		arg.AccNum,
+		arg.UpdateCardNum,
+		arg.CardNum,
+		arg.UpdatePin,
+		arg.Pin,
+		arg.UpdateSecurityCode,
+		arg.SecurityCode,
+		arg.UpdateCreditLimit,
+		arg.CreditLimit,
+		arg.UpdateMethod,
+		arg.MethodID,
+		arg.ID,
+	)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.AccBalance,
+		&i.AccNum,
+		&i.CardNum,
+		&i.Pin,
+		&i.SecurityCode,
+		&i.CreditLimit,
+		&i.MethodID,
+	)
+	return i, err
 }
 
 const partialUpdateBalanceSheet = `-- name: PartialUpdateBalanceSheet :one
@@ -354,6 +658,75 @@ func (q *Queries) PartialUpdateCategory(ctx context.Context, arg PartialUpdateCa
 	row := q.db.QueryRowContext(ctx, partialUpdateCategory, arg.ID, arg.Name)
 	var i Category
 	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
+const partialUpdateInstallment = `-- name: PartialUpdateInstallment :one
+update installment
+set installment_name = case when $1::boolean then $2::varchar(100) else name end,
+    total_cost = case when $3::boolean then $4::float else total_cost end,
+    interest_rate = case when $5::boolean then $6::float else interest_rate end,
+    period_num = case when $7::boolean then $8::int else period_num end,
+    paid_cost = case when $9::boolean then $10::float else paid_cost end,
+    current_period = case when $11::boolean then $12::int else current_period end,
+    period_cost = case when $13::boolean then $14::float else period_cost end,
+    account_id = case when $15::boolean then $16::bigserial else account_id end
+where id = $17
+returning id, name, total_cost, interest_rate, period_num, paid_cost, current_period, period_cost, account_id
+`
+
+type PartialUpdateInstallmentParams struct {
+	UpdateName          bool
+	Name                string
+	UpdateTotalCost     bool
+	TotalCost           float64
+	UpdateInterestRate  bool
+	InterestRate        float64
+	UpdatePeriodNum     bool
+	PeriodNum           int32
+	UpdatePaidCost      bool
+	PaidCost            float64
+	UpdateCurrentPeriod bool
+	CurrentPeriod       int32
+	UpdatePeriodCost    bool
+	PeriodCost          float64
+	UpdateAccount       bool
+	AccountID           int64
+	ID                  int64
+}
+
+func (q *Queries) PartialUpdateInstallment(ctx context.Context, arg PartialUpdateInstallmentParams) (Installment, error) {
+	row := q.db.QueryRowContext(ctx, partialUpdateInstallment,
+		arg.UpdateName,
+		arg.Name,
+		arg.UpdateTotalCost,
+		arg.TotalCost,
+		arg.UpdateInterestRate,
+		arg.InterestRate,
+		arg.UpdatePeriodNum,
+		arg.PeriodNum,
+		arg.UpdatePaidCost,
+		arg.PaidCost,
+		arg.UpdateCurrentPeriod,
+		arg.CurrentPeriod,
+		arg.UpdatePeriodCost,
+		arg.PeriodCost,
+		arg.UpdateAccount,
+		arg.AccountID,
+		arg.ID,
+	)
+	var i Installment
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.TotalCost,
+		&i.InterestRate,
+		&i.PeriodNum,
+		&i.PaidCost,
+		&i.CurrentPeriod,
+		&i.PeriodCost,
+		&i.AccountID,
+	)
 	return i, err
 }
 

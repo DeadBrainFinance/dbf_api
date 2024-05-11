@@ -3,8 +3,10 @@ package repositories
 import (
 	"context"
 	"database/sql"
+
 	"dbf_api/models"
 	"dbf_api/schemas"
+	"dbf_api/utils"
 )
 
 type CategoryRepository struct {
@@ -17,51 +19,29 @@ func NewCategoryRepository(db *sql.DB) *CategoryRepository {
     }
 }
 
-const createCategory = `-- name: CreateCategory :one
-insert into category (name)
-values($1)
-returning id, name
-`
 func (repo *CategoryRepository) CreateCategory(ctx context.Context, name string) error {
-	row := repo.db.QueryRowContext(ctx, createCategory, name)
+	row := repo.db.QueryRowContext(ctx, utils.CreateCategory, name)
 	var i models.Category
 	err := row.Scan(&i.ID, &i.Name)
 	return err
 }
 
-const getCategory = `-- name: GetCategory :one
-select id, name
-from category
-where id = $1
-limit 1
-`
 func (repo *CategoryRepository) GetByID(ctx context.Context, id int64) (models.Category, error) {
-	row := repo.db.QueryRowContext(ctx, getCategory, id)
+	row := repo.db.QueryRowContext(ctx, utils.GetCategory, id)
 	var i models.Category
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
-const partialUpdateCategory = `-- name: PartialUpdateCategory :one
-update category
-set name = $2
-where id = $1
-returning id, name
-`
 func (repo *CategoryRepository) PartialUpdateCategory(ctx context.Context, arg schemas.PartialUpdateCategoryParams) error {
-	row := repo.db.QueryRowContext(ctx, partialUpdateCategory, arg.ID, arg.Name)
+	row := repo.db.QueryRowContext(ctx, utils.PartialUpdateCategory, arg.ID, arg.Name)
 	var i models.Category
 	err := row.Scan(&i.ID, &i.Name)
 	return err
 }
 
-const listCategories = `-- name: ListCategories :many
-select id, name
-from category
-order by name
-`
 func (repo *CategoryRepository) ListCategories(ctx context.Context) ([]models.Category, error) {
-	rows, err := repo.db.QueryContext(ctx, listCategories)
+	rows, err := repo.db.QueryContext(ctx, utils.ListCategories)
 	if err != nil {
 		return nil, err
 	}
@@ -83,13 +63,7 @@ func (repo *CategoryRepository) ListCategories(ctx context.Context) ([]models.Ca
 	return items, nil
 }
 
-
-const deleteCategory = `-- name: DeleteCategory :exec
-delete
-from category
-where id = $1
-`
 func (repo *CategoryRepository) DeleteCategory(ctx context.Context, id int64) error {
-	_, err := repo.db.ExecContext(ctx, deleteCategory, id)
+	_, err := repo.db.ExecContext(ctx, utils.DeleteCategory, id)
 	return err
 }
