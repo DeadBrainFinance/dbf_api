@@ -60,7 +60,6 @@ def createEnvFile(sampleFile) {
     def HOST = "dbf"
     def DB_USER = "postgres"
     def DB_PASSWORD = "Ink0346333767"
-    def PGDATA = "/var/lib/postgresql/data/pgdata"
     def DB_PORT = "5432"
     def API_PORT = "4000"
     def CONNECTION_STRING = "postgresql://${DB_USER}:${DB_PASSWORD}@${HOST}:${DB_PORT}/${DB}"
@@ -72,7 +71,6 @@ def createEnvFile(sampleFile) {
     sh(script: "sed -i '/^DB_PASSWORD/s/\$/${DB_PASSWORD}/' .env")
     sh(script: "sed -i '/^DB_PORT/s/\$/${DB_PORT}/' .env")
     sh(script: "sed -i '/^API_PORT/s/\$/${API_PORT}/' .env")
-    sh(script: "sed -i '/^PGDATA/s/\$/${PGDATA}/' .env")
     sh(script: "sed -i '/^CONNECTION_STRING/s/\$/${CONNECTION_STRING}/' .env")
 
     sh(script: "cat .env")
