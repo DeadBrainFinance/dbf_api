@@ -34,6 +34,7 @@ services:
 
   dbf_backend:
     container_name: dbf_api
+    image: dbf_api
     restart: unless-stopped
     build:
       context: .
@@ -49,4 +50,8 @@ services:
       - dbf-network
     depends_on:
       - dbf_db
-
+    healthcheck:
+      test: "curl --fail http://localhost:${API_PORT}/ || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 5

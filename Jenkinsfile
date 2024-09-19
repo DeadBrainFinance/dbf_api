@@ -1,0 +1,67 @@
+pipeline {
+    agent {
+        label slave
+    }
+
+    stages {
+        stage("Setup environment") {
+            createEnvFile(".env.example")
+            echo "File .env created"
+            sh(script: "ls -a")
+        }
+
+        stage("Unit test") {
+            println("Running unittest...")
+        }
+
+        stage("Integration test") {
+            println("Running unittest...")
+        }
+
+        stage("Docker compose") {
+            if (env.BRACNH_NAME == "main" || env.BRACNH_NAME == "master") {
+                sh(script: "docker compose down")
+                sh(script: "docker compose up -d --build")
+            }
+        }
+
+        stage("Upload to Docker Hub") {
+            sh(script: "docker login -u inkeister -p Ink@0346333767")
+            sh(script: "docker tag dbf_api dbf_api:latest")
+            sh(script: "docker push dbf_api:latest")
+        }
+    }
+}
+
+def createEnvFile(sampleFile) {
+    def isExisted = fileExists ".env"
+    println(isExisted)
+    if (isExisted) {
+        sh(script: "rm .env")
+        sh(script: "cp ${sampleFile} .env")
+    } else {
+        sh(script: "cp ${sampleFile} .env")
+    }
+
+    def DB_DRIVER = "postgres"
+    def DB = "dbf_db"
+    def HOST = "dbf"
+    def DB_USER = "postgres"
+    def DB_PASSWORD = "Ink0346333767"
+    def PGDATA = "/var/lib/postgresql/data/pgdata"
+    def DB_PORT = "5432"
+    def API_PORT = "4000"
+    def CONNECTION_STRING = "postgresql://${DB_USER}:${DB_PASSWORD}@${HOST}:${DB_PORT}/${DB}"
+
+    sh(script: "sed -i '/^DB_DRIVER=${DB_DRIVER}' .env")
+    sh(script: "sed -i '/^DB=${DB}' .env")
+    sh(script: "sed -i '/^HOST=${HOST}' .env")
+    sh(script: "sed -i '/^DB_USER=${DB_USER}' .env")
+    sh(script: "sed -i '/^DB_PASSWORD=${DB_PASSWORD}' .env")
+    sh(script: "sed -i '/^DB_PORT=${DB_PORT}' .env")
+    sh(script: "sed -i '/^API_PORT=${API_PORT}' .env")
+    sh(script: "sed -i '/^PGDATA=${PGDATA}' .env")
+    sh(script: "sed -i '/^CONNECTION_STRING=${CONNECTION_STRING}' .env")
+
+    sh(script: "cat .env")
+}
