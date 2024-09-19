@@ -5,30 +5,40 @@ pipeline {
 
     stages {
         stage("Setup environment") {
-            createEnvFile(".env.example")
-            echo "File .env created"
-            sh(script: "ls -a")
+            steps {
+                createEnvFile(".env.example")
+                echo "File .env created"
+                sh(script: "ls -a")
+            }
         }
 
         stage("Unit test") {
-            println("Running unittest...")
+            steps {
+                println("Running unittest...")
+            }
         }
 
         stage("Integration test") {
-            println("Running unittest...")
+            steps {
+                println("Running unittest...")
+            }
         }
 
         stage("Docker compose") {
-            if (env.BRACNH_NAME == "main" || env.BRACNH_NAME == "master") {
-                sh(script: "docker compose down")
-                sh(script: "docker compose up -d --build")
+            steps {
+                if (env.BRACNH_NAME == "main" || env.BRACNH_NAME == "master") {
+                    sh(script: "docker compose down")
+                    sh(script: "docker compose up -d --build")
+                }
             }
         }
 
         stage("Upload to Docker Hub") {
-            sh(script: "docker login -u inkeister -p Ink@0346333767")
-            sh(script: "docker tag dbf_api dbf_api:latest")
-            sh(script: "docker push dbf_api:latest")
+            steps {
+                sh(script: "docker login -u inkeister -p Ink@0346333767")
+                sh(script: "docker tag dbf_api dbf_api:latest")
+                sh(script: "docker push dbf_api:latest")
+            }
         }
     }
 }
