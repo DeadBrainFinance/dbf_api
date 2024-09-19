@@ -65,15 +65,15 @@ def createEnvFile(sampleFile) {
     def API_PORT = "4000"
     def CONNECTION_STRING = "postgresql://${DB_USER}:${DB_PASSWORD}@${HOST}:${DB_PORT}/${DB}"
 
-    sh(script: "sed -i '/^DB_DRIVER=${DB_DRIVER}' .env")
-    sh(script: "sed -i '/^DB=${DB}' .env")
-    sh(script: "sed -i '/^HOST=${HOST}' .env")
-    sh(script: "sed -i '/^DB_USER=${DB_USER}' .env")
-    sh(script: "sed -i '/^DB_PASSWORD=${DB_PASSWORD}' .env")
-    sh(script: "sed -i '/^DB_PORT=${DB_PORT}' .env")
-    sh(script: "sed -i '/^API_PORT=${API_PORT}' .env")
-    sh(script: "sed -i '/^PGDATA=${PGDATA}' .env")
-    sh(script: "sed -i '/^CONNECTION_STRING=${CONNECTION_STRING}' .env")
+    sh(script: "sed -i '/^DB_DRIVER=/s\$/${DB_DRIVER}' .env")
+    sh(script: "sed -i '/^DB=/s\$/${DB}' .env")
+    sh(script: "sed -i '/^HOST=/s\$/${HOST}' .env")
+    sh(script: "sed -i '/^DB_USER=/s\$/${DB_USER}' .env")
+    sh(script: "sed -i '/^DB_PASSWORD=/s\$/${DB_PASSWORD}' .env")
+    sh(script: "sed -i '/^DB_PORT=/s\$/${DB_PORT}' .env")
+    sh(script: "sed -i '/^API_PORT=/s\$/${API_PORT}' .env")
+    sh(script: "sed -i '/^PGDATA=/s\$/${PGDATA}' .env")
+    sh(script: "sed -i '/^CONNECTION_STRING=/s\$/${CONNECTION_STRING}' .env")
 
     sh(script: "cat .env")
 }
