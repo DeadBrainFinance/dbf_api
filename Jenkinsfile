@@ -26,9 +26,11 @@ pipeline {
 
         stage("Docker compose") {
             steps {
-                if (env.BRACNH_NAME == "main" || env.BRACNH_NAME == "master") {
-                    sh(script: "docker compose down")
-                    sh(script: "docker compose up -d --build")
+                script {
+                    if (env.BRACNH_NAME == "main" || env.BRACNH_NAME == "master") {
+                        sh(script: "docker compose down")
+                        sh(script: "docker compose up -d --build")
+                    }
                 }
             }
         }
