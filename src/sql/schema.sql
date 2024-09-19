@@ -1,11 +1,3 @@
--- create table transaction
--- (
---     id bigserial primary key,
---     name varchar(255) not null,
---     cost float not null,
---     time timestamp without time zone not null default now()
--- );
-
 create table transaction
 (
     id bigserial primary key,
@@ -58,3 +50,15 @@ create table installment
     period_cost float not null,
     account_id int references account(id) not null
 );
+create table debt
+(
+    id bigserial primary key,
+    name varchar(100) not null,
+    lender varchar(200) not null,
+    borrower varchar(200) not null,
+    interest_rate float,
+    borrowed_amount float not null,
+    paid_amount float not null,
+    lend_date timestamp without time zone not null default now(),
+);
+

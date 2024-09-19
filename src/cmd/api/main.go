@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"dbf_api/server"
+	"dbf_api/api"
 )
 
 func main() {
-	app := server.NewApp()
+	app := api.NewApp()
 	port := "4000"
 
 	if err := app.Run(port); err != nil {

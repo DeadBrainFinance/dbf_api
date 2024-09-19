@@ -162,3 +162,37 @@ order by name;
 delete
 from installment
 where id = $1;
+
+
+-- name: CreateDebt :one
+insert into debt (name, lender, borrower, interest_rate, borrowed_amount, paid_amount, lend_date)
+values($1, $2, $3, $4, $5, $6, $7)
+returning *;
+
+-- name: GetDebt :one
+select *
+from debt
+where id = $1
+limit 1;
+
+
+-- name: PartialUpdateDebt :one
+update debt
+set name = case when @update_name::boolean then @name::varchar(100) else name end,
+    lender = case when @update_lender::boolean then @lender::varchar(200) else lender end,
+    borrower = case when @update_borrower::boolean then @borrower::varchar(200) else borrower end,
+    interest_rate = case when @update_interest_rate::boolean then @interest_rate::float else interest_rate end,
+    paid_amount = case when @update_paid_amount::boolean then @paid_amount::float else paid_amount end,
+    lend_date = case when @update_lend_date::boolean then @lend_date::timestamp else lend_date end,
+where id = @id
+returning *;
+
+-- name: ListDebts :many
+select *
+from debt
+order by name;
+
+-- name: DeleteDebt :exec
+delete
+from debt
+where id = $1;
