@@ -5,6 +5,9 @@ go 1.22
 require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-chi/chi/v5 v5.0.12 // indirect
+	github.com/go-kit/kit v0.13.0 // indirect
+	github.com/go-kit/log v0.2.0 // indirect
+	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
