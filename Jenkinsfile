@@ -68,12 +68,12 @@ def createEnvFile(sampleFile) {
     sh(script: "sed -i '3d' .env")
     sh(script: "sed -i '3 i DB_PASSWORD=${DB_PASSWORD}' .env")
     sh(script: "sed -i '5d' .env")
-    sh(script: "sed -i '4d' .env")
     sh(script: "sed -i '6 i DB_PORT=${DB_PORT}' .env")
     sh(script: "sed -i '7d' .env")
     sh(script: "sed -i '/^API_PORT/s/\$/${API_PORT}/' .env")
     sh(script: "sed -i '8 i CONNECTION_STRING=${CONNECTION_STRING}' .env")
     sh(script: "sed -it '9d' .env")
+    sh(script: "sed -i '4d' .env")
 
     sh(script: "cat .env")
 }
