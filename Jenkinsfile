@@ -74,6 +74,7 @@ def createEnvFile(sampleFile) {
     sh(script: "sed -i '8 i CONNECTION_STRING=${CONNECTION_STRING}' .env")
     sh(script: "sed -it '9d' .env")
     sh(script: "sed -i '4d' .env")
+    sh(script: "sed -i '8 i DB=${DB}' .env")
 
     sh(script: "cat .env")
 }
