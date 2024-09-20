@@ -64,8 +64,7 @@ def createEnvFile(sampleFile) {
 
     sh(script: "sed -i '1 i DB_DRIVER=${DB_DRIVER}' .env")
     sh(script: "sed -i '2 i DB=${DB}' .env")
-    sh(script: "sed -i '2d' .env")
-    sh(script: "sed -i '2 i DB_USER=${DB_USER}' .env")
+    sh(script: "sed -i '3 i DB_USER=${DB_USER}' .env")
     sh(script: "sed -i '3d' .env")
     sh(script: "sed -i '3 i DB_PASSWORD=${DB_PASSWORD}' .env")
     sh(script: "sed -i '5d' .env")
