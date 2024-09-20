@@ -62,13 +62,13 @@ def createEnvFile(sampleFile) {
     def API_PORT = "4000"
     def CONNECTION_STRING = "postgresql://${DB_USER}:${DB_PASSWORD}@${HOST}:${DB_PORT}/${DB}"
 
-    sh(script: "sed -i '1 i DB_DRIVER=${DB_DRIVER}/' .env")
+    sh(script: "sed -i '1 i DB_DRIVER=${DB_DRIVER}' .env")
     sh(script: "sed -i '2d' .env")
-    sh(script: "sed -i '2 i DB_USER=${DB_USER}/' .env")
+    sh(script: "sed -i '2 i DB_USER=${DB_USER}' .env")
     sh(script: "sed -i '3d' .env")
-    sh(script: "sed -i '3 i DB_PASSWORD=${DB_PASSWORD}/' .env")
-    sh(script: "sed -i '4d' .env")
-    sh(script: "sed -i '6 i DB_PORT=${DB_PORT}/' .env")
+    sh(script: "sed -i '3 i DB_PASSWORD=${DB_PASSWORD}' .env")
+    sh(script: "sed -i '5d' .env")
+    sh(script: "sed -i '6 i DB_PORT=${DB_PORT}' .env")
     sh(script: "sed -i '7d' .env")
     sh(script: "sed -i '/^API_PORT/s/\$/${API_PORT}/' .env")
     sh(script: "sed -i '8 i CONNECTION_STRING=${CONNECTION_STRING}' .env")
