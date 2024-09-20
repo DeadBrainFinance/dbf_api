@@ -70,5 +70,12 @@ def createEnvFile(sampleFile) {
     sh(script: "sed -i '/^API_PORT/s/\$/${API_PORT}/' .env")
     sh(script: "sed -i '8 i CONNECTION_STRING=${CONNECTION_STRING}' .env")
 
+    sh(script: "sed -i '5d' .env")
+    sh(script: "sed -i '7d' .env")
+    sh(script: "sed -i '9d' .env")
+    sh(script: "sed -i '10d' .env")
+    sh(script: "sed -i '12d' .env")
+    sh(script: "sed -i '14d' .env")
+
     sh(script: "cat .env")
 }
