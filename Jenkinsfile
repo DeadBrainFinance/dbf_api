@@ -63,6 +63,7 @@ def createEnvFile(sampleFile) {
     def CONNECTION_STRING = "postgresql://${DB_USER}:${DB_PASSWORD}@${HOST}:${DB_PORT}/${DB}"
 
     sh(script: "sed -i '1 i DB_DRIVER=${DB_DRIVER}' .env")
+    sh(script: "sed -i '2 i DB=${DB}' .env")
     sh(script: "sed -i '2d' .env")
     sh(script: "sed -i '2 i DB_USER=${DB_USER}' .env")
     sh(script: "sed -i '3d' .env")
@@ -74,7 +75,6 @@ def createEnvFile(sampleFile) {
     sh(script: "sed -i '8 i CONNECTION_STRING=${CONNECTION_STRING}' .env")
     sh(script: "sed -it '9d' .env")
     sh(script: "sed -i '4d' .env")
-    sh(script: "sed -i '8 i DB=${DB}' .env")
 
     sh(script: "cat .env")
 }
