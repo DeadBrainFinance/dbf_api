@@ -6,6 +6,9 @@ pipeline {
     stages {
         stage("Setup environment") {
             steps {
+                def data = getInfoFromYAML()
+                println(data)
+                error
                 createEnvFile(".env.example")
                 echo "File .env created"
                 sh(script: "ls -a")
@@ -20,7 +23,7 @@ pipeline {
 
         stage("Integration test") {
             steps {
-                println("Running unittest...")
+                println("Running integration test...")
             }
         }
 
@@ -77,4 +80,9 @@ def createEnvFile(sampleFile) {
     sh(script: "sed -i '9d' .env")
 
     sh(script: "cat .env")
+}
+
+def getInfoFromYAML(file) {
+    data = readYaml file: "${file}"
+    return data
 }
