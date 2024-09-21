@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage("Setup environment") {
             steps {
-                def data = getInfoFromYAML()
+                def data = getInfoFromYAML("config.yml")
                 println(data)
                 error
                 createEnvFile(".env.example")
