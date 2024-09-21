@@ -8,8 +8,8 @@ pipeline {
             steps {
                 script {
                     data = getInfoFromYAML("config.yml")
-                    // project_name = data."${project_name}"
-                    // project_version = data."${project_version}"
+                    def project_name = data.project_name
+                    def project_version = data.project_version
 
                     createEnvFile(".env.example")
                     echo "File .env created"
