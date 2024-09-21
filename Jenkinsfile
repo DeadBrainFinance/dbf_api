@@ -1,11 +1,9 @@
+project_version = ""
+project_name = ""
+
 pipeline {
     agent {
         label "slave"
-    }
-
-    environment {
-        project_version = ""
-        project_name = ""
     }
 
     stages {
@@ -13,8 +11,8 @@ pipeline {
             steps {
                 script {
                     data = getInfoFromYAML("config.yml")
-                    env.project_name = data.project_name
-                    print(env.project_name)
+                    project_name = data.project_name
+                    print(project_name)
                     print(data.project_name)
                     error
                     env.project_version = data.project_version
