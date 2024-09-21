@@ -42,8 +42,8 @@ pipeline {
         stage("Upload to Docker Hub") {
             steps {
                 sh(script: "docker login -u inkeister -p Ink@0346333767")
-                // sh(script: "docker tag dbf_api inkeister/dbf_api:${project_version}")
-                // sh(script: "docker push inkeister/dbf_api:${project_version}")
+                sh(script: "docker tag dbf_api inkeister/dbf_api:${project_version}")
+                sh(script: "docker push inkeister/dbf_api:${project_version}")
                 sh(script: "docker tag dbf_api inkeister/dbf_api:latest")
                 sh(script: "docker push inkeister/dbf_api:latest")
             }
