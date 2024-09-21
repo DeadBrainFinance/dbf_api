@@ -46,12 +46,14 @@ pipeline {
 
         stage("Upload to Docker Hub") {
             steps {
-                if (env.BRANCH_NAME == "main" || env.BRANCH_NAME == "master") {
-                    sh(script: "docker login -u inkeister -p Ink@0346333767")
-                    sh(script: "docker tag dbf_api inkeister/dbf_api:${project_version}")
-                    sh(script: "docker push inkeister/dbf_api:${project_version}")
-                    sh(script: "docker tag dbf_api inkeister/dbf_api:latest")
-                    sh(script: "docker push inkeister/dbf_api:latest")
+                script {
+                    if (env.BRANCH_NAME == "main" || env.BRANCH_NAME == "master") {
+                        sh(script: "docker login -u inkeister -p Ink@0346333767")
+                        sh(script: "docker tag dbf_api inkeister/dbf_api:${project_version}")
+                        sh(script: "docker push inkeister/dbf_api:${project_version}")
+                        sh(script: "docker tag dbf_api inkeister/dbf_api:latest")
+                        sh(script: "docker push inkeister/dbf_api:latest")
+                    }
                 }
             }
         }
