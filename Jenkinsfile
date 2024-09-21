@@ -6,12 +6,13 @@ pipeline {
     stages {
         stage("Setup environment") {
             steps {
-                data = getInfoFromYAML("config.yml")
-                println(data)
-                error
-                createEnvFile(".env.example")
-                echo "File .env created"
-                sh(script: "ls -a")
+                script {
+                    data = getInfoFromYAML("config.yml")
+                    error
+                    createEnvFile(".env.example")
+                    echo "File .env created"
+                    sh(script: "ls -a")
+                }
             }
         }
 
