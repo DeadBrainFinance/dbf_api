@@ -14,6 +14,8 @@ pipeline {
                 script {
                     data = getInfoFromYAML("config.yml")
                     env.project_name = data.project_name
+                    print(env.project_name)
+                    error
                     env.project_version = data.project_version
 
                     createEnvFile(".env.example")
