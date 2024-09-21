@@ -8,6 +8,7 @@ pipeline {
             steps {
                 script {
                     data = getInfoFromYAML("config.yml")
+                    print(data)
                     error
                     createEnvFile(".env.example")
                     echo "File .env created"
