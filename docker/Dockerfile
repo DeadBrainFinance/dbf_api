@@ -8,4 +8,6 @@ EXPOSE ${API_PORT}
 
 COPY . .
 
-RUN go install github.com/cosmtrek/air@latest && go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN go mod tidy
+
+RUN go install github.com/air-verse/air@latest && go install github.com/pressly/goose/v3/cmd/goose@latest

@@ -96,6 +96,7 @@ func (a *App) Run(port string) error {
 
     router.Get("/", func(w http.ResponseWriter, r *http.Request) {
         w.Write([]byte("OK"))
+        utils.WriteResponse(w, http.StatusOK, "")
     })
 
 
