@@ -175,13 +175,13 @@ limit 1
 `
 const PartialUpdateDebt = `-- name: PartialUpdateDebt :one
 update debt
-    set name = case when $1::boolean then $2::varchar(100) else name end,
-        lender = case when $3::boolean then $4::varchar(200) else  lender end,
-        borrower = case when $5::boolean then $6::varchar(200) else borrower end,
-        interest_rate = case when $7::boolean then $8::float else interest_rate end,
-        paid_amount = case when $9::boolean then $9::float else paid_amount end,
-        lend_date = case when $10::boolean then $11::timestamp else lend_date end,
-where id = $12
+set name = case when $1::boolean then $2::varchar(100) else name end,
+    lender = case when $3::boolean then $4::varchar(200) else  lender end,
+    borrower = case when $5::boolean then $6::varchar(200) else borrower end,
+    interest_rate = case when $7::boolean then $8::float else interest_rate end,
+    paid_amount = case when $9::boolean then $10::float else paid_amount end,
+    lend_date = case when $11::boolean then $12::timestamp else lend_date end,
+where id = $13
 returning id, name, lender, borrower, interest_rate, borrowed_amount, paid_amount, lend_date
 `
 const ListDebts = `-- name: ListDebts :many
@@ -197,24 +197,25 @@ where id = $1
 
 
 const CreateCategory = `-- name: CreateCategory :one
-insert into category (name)
-values($1)
-returning id, name
+insert into category (name, description)
+values($1, $2)
+returning id, name, description
 `
 const GetCategory = `-- name: GetCategory :one
-select id, name
+select id, name, coalesce(description, '')
 from category
 where id = $1
 limit 1
 `
 const PartialUpdateCategory = `-- name: PartialUpdateCategory :one
 update category
-set name = $2
-where id = $1
-returning id, name
+set name = case when $1:boolean then $2::varchar(100) else name end,
+    description = case when $3::boolean then $4::varchar(200) else description end,
+where id = $5
+returning id, name, description
 `
 const ListCategories = `-- name: ListCategories :many
-select id, name
+select id, name, coalesce(description, '')
 from category
 order by name
 `

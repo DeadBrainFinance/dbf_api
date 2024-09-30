@@ -69,8 +69,8 @@ from balancesheet
 where id = $1;
 
 -- name: CreateCategory :one
-insert into category (name)
-values($1)
+insert into category (name, description)
+values($1, $2)
 returning *;
 
 -- name: GetCategory :one
@@ -81,8 +81,9 @@ limit 1;
 
 -- name: PartialUpdateCategory :one
 update category
-set name = $2
-where id = $1
+set name = case when @update_name::boolean then @name::varchar(100) else name end,
+    description = case when @update_description::boolean then @description:varchar(200) else description end
+where id = @id
 returning *;
 
 -- name: ListCategories :many

@@ -19,24 +19,24 @@ func NewCategoryRepository(db *sql.DB) *CategoryRepository {
     }
 }
 
-func (repo *CategoryRepository) CreateCategory(ctx context.Context, name string) error {
-	row := repo.db.QueryRowContext(ctx, utils.CreateCategory, name)
+func (repo *CategoryRepository) CreateCategory(ctx context.Context, arg schemas.CreateCategoryParams) error {
+	row := repo.db.QueryRowContext(ctx, utils.CreateCategory, arg.Name, arg.Description)
 	var i models.Category
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.Description)
 	return err
 }
 
 func (repo *CategoryRepository) GetByID(ctx context.Context, id int64) (models.Category, error) {
 	row := repo.db.QueryRowContext(ctx, utils.GetCategory, id)
 	var i models.Category
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.Description)
 	return i, err
 }
 
 func (repo *CategoryRepository) PartialUpdateCategory(ctx context.Context, arg schemas.PartialUpdateCategoryParams) error {
-	row := repo.db.QueryRowContext(ctx, utils.PartialUpdateCategory, arg.ID, arg.Name)
+	row := repo.db.QueryRowContext(ctx, utils.PartialUpdateCategory, arg.ID, arg.Name, arg.UpdateName, arg.Description, arg.UpdateDescription)
 	var i models.Category
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.Description)
 	return err
 }
 
@@ -49,7 +49,7 @@ func (repo *CategoryRepository) ListCategories(ctx context.Context) ([]models.Ca
 	var items []models.Category
 	for rows.Next() {
 		var i models.Category
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.Description); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

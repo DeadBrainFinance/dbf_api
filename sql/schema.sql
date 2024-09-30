@@ -10,6 +10,7 @@ create table category
 (
     id bigserial primary key,
     name varchar(100) not null
+    description varchar(200)
 );
 create table method
 (

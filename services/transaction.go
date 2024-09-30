@@ -49,7 +49,7 @@ func (s *TransactionService) GetById(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	parsed_id, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		http.Error(w, "Unexpeced error", http.StatusInternalServerError)
+		http.Error(w, "Unexpected error", http.StatusInternalServerError)
 		log.Println("Can't parse id in the URL.")
 		return
 	}
@@ -103,7 +103,7 @@ func (s *TransactionService) UpdateRecord(w http.ResponseWriter, r *http.Request
 	id := chi.URLParam(r, "id")
 	parsed_id, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		http.Error(w, "Unexpeced error", http.StatusInternalServerError)
+		http.Error(w, "Unexpected error", http.StatusInternalServerError)
 		log.Println("Can't parse id in the URL.")
 		return
     }
@@ -111,7 +111,7 @@ func (s *TransactionService) UpdateRecord(w http.ResponseWriter, r *http.Request
 
     err = json.NewDecoder(r.Body).Decode(&params)
     if err != nil {
-        http.Error(w, "Unexpeced error", http.StatusInternalServerError)
+        http.Error(w, "Unexpected error", http.StatusInternalServerError)
         log.Println(err.Error())
         return
     }

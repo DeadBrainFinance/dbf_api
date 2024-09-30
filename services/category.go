@@ -33,14 +33,14 @@ func (s *CategoryService) RegisterHTTPEndpoints(r chi.Router) {
 }
 
 func (s *CategoryService) ListCategories(w http.ResponseWriter, r *http.Request) {
-	categorys, err := s.categoryRepository.ListCategories(context.Background())
+	categories, err := s.categoryRepository.ListCategories(context.Background())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	utils.WriteResponse(w, http.StatusOK, "")
-	json.NewEncoder(w).Encode(categorys)
+	json.NewEncoder(w).Encode(categories)
 	return
 }
 
@@ -48,7 +48,7 @@ func (s *CategoryService) GetById(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	parsed_id, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		http.Error(w, "Unexpeced error", http.StatusInternalServerError)
+		http.Error(w, "Unexpected error", http.StatusInternalServerError)
 		log.Println("Can't parse id in the URL.")
 		return
 	}
@@ -77,7 +77,13 @@ func (s *CategoryService) CreateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = s.categoryRepository.CreateCategory(context.Background(), category.Name)
+
+	params := schemas.CreateCategoryParams{
+		Name: category.Name,
+		Description: category.Description,
+	}
+
+	err = s.categoryRepository.CreateCategory(context.Background(), params)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -94,19 +100,26 @@ func (s *CategoryService) UpdateRecord(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	parsed_id, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		http.Error(w, "Unexpeced error", http.StatusInternalServerError)
+		http.Error(w, "Unexpected error", http.StatusInternalServerError)
 		log.Println("Can't parse id in the URL.")
 		return
     }
 
     err = json.NewDecoder(r.Body).Decode(&params)
     if err != nil {
-        http.Error(w, "Unexpeced error", http.StatusInternalServerError)
+        http.Error(w, "Unexpected error", http.StatusInternalServerError)
         log.Println(err.Error())
         return
     }
 
     params.ID = parsed_id
+
+    if params.Name != "" {
+        params.UpdateName = true
+    }
+    if params.Description != "" {
+        params.UpdateDescription = true
+    }
 
     err = s.categoryRepository.PartialUpdateCategory(context.Background(), params)
     if err != nil {
