@@ -30,7 +30,7 @@ func InitDB() *database.Postgres {
     var envFile utils.EnvConfigs
     envFile.LoadEnvVariables()
 
-    db, err := database.NewPostgres(envFile.DB, "host.docker.internal", envFile.DB_PORT, envFile.DB_USER, envFile.DB_PASSWORD)
+    db, err := database.NewPostgres(envFile.DB, envFile.HOST, envFile.DB_PORT, envFile.DB_USER, envFile.DB_PASSWORD)
 	if err != nil {
 		stdlog.Fatal(err.Error())
 	}

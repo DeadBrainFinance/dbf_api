@@ -11,6 +11,7 @@ type EnvConfigs struct {
     DB_USER string
     DB_PASSWORD string
     DB_PORT string
+    HOST string
 }
 
 func(config *EnvConfigs) LoadEnvVariables() {

@@ -17,11 +17,11 @@ import (
 )
 
 type BalanceSheetService struct {
-   balancesheetRepository *repositories.BalanceSheetRepository
+    balancesheetRepository *repositories.BalanceSheetRepository
 }
 
-func NewBalanceSheetService(transRepo *repositories.BalanceSheetRepository) *BalanceSheetService {
-	return &BalanceSheetService{balancesheetRepository: transRepo}
+func NewBalanceSheetService(balancesheetRepo *repositories.BalanceSheetRepository) *BalanceSheetService {
+    return &BalanceSheetService{balancesheetRepository: balancesheetRepo}
 }
 
 func (s *BalanceSheetService) RegisterHTTPEndpoints(r chi.Router) {

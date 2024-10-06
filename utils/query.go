@@ -36,7 +36,7 @@ returning id, name, total_cost, interest_rate, period_num, paid_cost, current_pe
 `
 
 const GetAccount = `-- name: GetAccount :one
-select id, name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id
+select id, name, coalesce(acc_balance, 0), acc_num, card_num, pin, security_code, coalesce(credit_limit, 0), method_id
 from account
 where id = $1
 limit 1
@@ -65,7 +65,7 @@ where id = $17
 returning id, name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id
 `
 const ListAccounts = `-- name: ListAccounts :many
-select id, name, acc_balance, acc_num, card_num, pin, security_code, credit_limit, method_id
+select id, name, coalesce(acc_balance, 0), acc_num, card_num, pin, security_code, coalesce(credit_limit, 0), method_id
 from account
 order by name
 `
@@ -120,7 +120,7 @@ where id = $1
 returning id, name
 `
 const ListMethods = `-- name: ListMethods :many
-select id, name
+select id, coalesce(name, '')
 from method
 order by name
 `
@@ -168,7 +168,7 @@ values($1, $2, $3, $4, $5, $6, $7)
 returning id, name, lender, borrower, interest_rate, borrowed_amount, paid_amount, lend_date
 `
 const GetDebt = `-- name: GetDebt :one
-select id, name, lender, borrower, interest_rate, borrowed_amount, paid_amount, lend_date
+select id, name, lender, borrower, coalesce(interest_rate, 0), borrowed_amount, paid_amount, lend_date
 from debt
 where id = $1
 limit 1
@@ -185,7 +185,7 @@ where id = $13
 returning id, name, lender, borrower, interest_rate, borrowed_amount, paid_amount, lend_date
 `
 const ListDebts = `-- name: ListDebts :many
-select id, name, lender, borrower, interest_rate, borrowed_amount, paid_amount, lend_date
+select id, name, lender, borrower, coalesce(interest_rate, 0), borrowed_amount, paid_amount, lend_date
 from debt
 order by name
 `
